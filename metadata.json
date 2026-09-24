@@ -1,0 +1,6 @@
+{
+  "name": "SiAntri Dukcapil - Sistem Antrian Loket Digital",
+  "description": "Sistem pengelolaan antrian loket Dinas Kependudukan dan Pencatatan Sipil berbasis web responsif, PWA, multi-loket, real-time TV display, dan portal admin terproteksi password.",
+  "requestFramePermissions": [],
+  "majorCapabilities": []
+}
