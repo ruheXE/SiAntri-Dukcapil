@@ -10,7 +10,10 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const PORT = Number(process.env.PORT || 3000);
-const DATA_FILE = path.join(__dirname, 'queue-data.json');
+const isVercel = Boolean(process.env.VERCEL);
+const DATA_FILE = isVercel
+  ? path.join('/tmp', 'queue-data.json')
+  : path.join(__dirname, 'queue-data.json');
 
 // Password hashing helper for server
 function hashPasswordServer(password: string, salt: string): string {
@@ -426,11 +429,10 @@ function addAudit(username: string, role: string, action: string, details: strin
   saveData();
 }
 
-async function startServer() {
-  const app = express();
-  app.use(express.json());
+export const app = express();
+app.use(express.json());
 
-  // API ROUTES
+// API ROUTES
 
   // 1. PUBLIC QUEUE DASHBOARD STATE
   app.get('/api/queue/public', (req, res) => {
@@ -919,8 +921,8 @@ async function startServer() {
     res.send(csv);
   });
 
-  // Mount Vite middleware for SPA
-  if (process.env.NODE_ENV !== 'production') {
+  // Mount Vite middleware for SPA in local dev environment
+  if (process.env.NODE_ENV !== 'production' && !process.env.VERCEL) {
     const vite = await createViteServer({
       server: { middlewareMode: true },
       appType: 'custom',
@@ -937,7 +939,7 @@ async function startServer() {
         next(e);
       }
     });
-  } else {
+  } else if (!process.env.VERCEL) {
     app.use(express.static(path.resolve(__dirname, 'dist')));
     app.get('*', (req, res) => {
       if (req.originalUrl.startsWith('/api')) return;
@@ -945,9 +947,8 @@ async function startServer() {
     });
   }
 
-  app.listen(PORT, '0.0.0.0', () => {
-    console.log(`SiAntri Dukcapil Server running on http://0.0.0.0:${PORT}`);
-  });
-}
-
-startServer();
+  if (!process.env.VERCEL) {
+    app.listen(PORT, '0.0.0.0', () => {
+      console.log(`SiAntri Dukcapil Server running on http://0.0.0.0:${PORT}`);
+    });
+  }
